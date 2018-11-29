@@ -2,60 +2,55 @@
 
 #include "General.h"
 
-
 /**************************************************************************************************/
 /*                                                                                                */
-/*                                       CONSTANTS & MACROS                                       */
-/*                                                                                                */
-/**************************************************************************************************/
-
-
-/**************************************************************************************************/
-/*                                                                                                */
-/*                                     TYPE/CLASS DEFINITIONS                                     */
+/*                                       CONSTANTS & MACROS */
 /*                                                                                                */
 /**************************************************************************************************/
 
-class CChessClock
-{
-public:
-   CChessClock (void);
+/**************************************************************************************************/
+/*                                                                                                */
+/*                                     TYPE/CLASS DEFINITIONS */
+/*                                                                                                */
+/**************************************************************************************************/
 
-   void Start (void);
-   void Stop (void);
-   void Reset (LONG maxSecs = -1);
-   void RecalcState (void);
-   BOOL Tick (void);
+class CChessClock {
+ public:
+  CChessClock(void);
 
-   BOOL running;           // Is this clock currently running?
-   BOOL timeOut;
-   CHAR state[9];
-   LONG elapsed;           // Elapsed time in whole seconds
-   BOOL countDown;         // Are we using countdown?
-   LONG maxSecs;           // Maximum number of seconds (if countdown)
+  void Start(void);
+  void Stop(void);
+  void Reset(LONG maxSecs = -1);
+  void RecalcState(void);
+  BOOL Tick(void);
 
-private:
-   void Inc (void);
-   void Dec (void);
+  BOOL running;  // Is this clock currently running?
+  BOOL timeOut;
+  CHAR state[9];
+  LONG elapsed;    // Elapsed time in whole seconds
+  BOOL countDown;  // Are we using countdown?
+  LONG maxSecs;    // Maximum number of seconds (if countdown)
 
-   LONG ticks0;   
-   LONG nextTick;          // Value of "Clock()" at start of search.
-   INT  corrector;         // Corrector count. Because the true frequency of Clock ticks is 60.15 Hz, it
-                           // will gain 3 ticks in 20 secs.
+ private:
+  void Inc(void);
+  void Dec(void);
+
+  LONG ticks0;
+  LONG nextTick;  // Value of "Clock()" at start of search.
+  INT corrector;  // Corrector count. Because the true frequency of Clock ticks
+                  // is 60.15 Hz, it will gain 3 ticks in 20 secs.
 };
 
-
 /**************************************************************************************************/
 /*                                                                                                */
-/*                                          GLOBAL VARIABLES                                      */
-/*                                                                                                */
-/**************************************************************************************************/
-
-
-/**************************************************************************************************/
-/*                                                                                                */
-/*                                          FUNCTION PROTOTYPES                                   */
+/*                                          GLOBAL VARIABLES */
 /*                                                                                                */
 /**************************************************************************************************/
 
-void FormatClockTime (ULONG secs, CHAR s[]);
+/**************************************************************************************************/
+/*                                                                                                */
+/*                                          FUNCTION PROTOTYPES */
+/*                                                                                                */
+/**************************************************************************************************/
+
+void FormatClockTime(ULONG secs, CHAR s[]);

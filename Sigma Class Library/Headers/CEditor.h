@@ -2,217 +2,208 @@
 Copyright (c) 2011, Ole K. Christensen
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted 
-provided that the following conditions are met:
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
 
-¥ Redistributions of source code must retain the above copyright notice, this list of conditions 
-  and the following disclaimer.
+¥ Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
 
-¥ Redistributions in binary form must reproduce the above copyright notice, this list of conditions 
-  and the following disclaimer in the documentation and/or other materials provided with the 
-  distribution.
+¥ Redistributions in binary form must reproduce the above copyright notice, this
+list of conditions and the following disclaimer in the documentation and/or
+other materials provided with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
-IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
-CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
-IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
-OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #pragma once
 
 #include "CControl.h"
 
-
 /**************************************************************************************************/
 /*                                                                                                */
-/*                                       CONSTANTS & MACROS                                       */
+/*                                       CONSTANTS & MACROS */
 /*                                                                                                */
 /**************************************************************************************************/
 
 #define maxTxLines 1024
 #define srcStrLen 50
 
-
 /**************************************************************************************************/
 /*                                                                                                */
-/*                                         TYPE DEFINITIONS                                       */
-/*                                                                                                */
-/**************************************************************************************************/
-
-
-/**************************************************************************************************/
-/*                                                                                                */
-/*                                         CLASS DEFINITIONS                                      */
+/*                                         TYPE DEFINITIONS */
 /*                                                                                                */
 /**************************************************************************************************/
 
-class CEditor : public CControl
-{
-public:
-   CEditor
-   (  CViewOwner *owner,
-      CRect frame,
-      CHAR *text,
-      INT bufferSize = 1024,
-      BOOL show = true,
-      BOOL enable = true,
-      BOOL readOnly = false
-   );
-   virtual ~CEditor (void);
+/**************************************************************************************************/
+/*                                                                                                */
+/*                                         CLASS DEFINITIONS */
+/*                                                                                                */
+/**************************************************************************************************/
 
-   void Enable (BOOL enabled);
-   void Password (BOOL password);
+class CEditor : public CControl {
+ public:
+  CEditor(CViewOwner *owner, CRect frame, CHAR *text, INT bufferSize = 1024,
+          BOOL show = true, BOOL enable = true, BOOL readOnly = false);
+  virtual ~CEditor(void);
 
-   virtual void HandleActivate (BOOL wasActivated);
-   virtual void HandleResize (void);
-   virtual void HandleUpdate (CRect updateRect);
-   virtual BOOL HandleMouseDown (CPoint pt, INT modifiers, BOOL doubleClick);
-   virtual BOOL HandleKeyDown (CHAR c, INT key, INT modifiers);
-   virtual void HandleFocus (BOOL gotFocus);
-   virtual void HandleNullEvent (void);
-   virtual void HandleVisChange (void);
+  void Enable(BOOL enabled);
+  void Password(BOOL password);
 
-   virtual void HandleUndo (void);
-   virtual void HandleRedo (void);
-   virtual void HandleCut (void);
-   virtual void HandleCopy (void);
-   virtual void HandlePaste (void);
-   virtual void HandleClear (void);
-   virtual void HandleClearAll (void);
+  virtual void HandleActivate(BOOL wasActivated);
+  virtual void HandleResize(void);
+  virtual void HandleUpdate(CRect updateRect);
+  virtual BOOL HandleMouseDown(CPoint pt, INT modifiers, BOOL doubleClick);
+  virtual BOOL HandleKeyDown(CHAR c, INT key, INT modifiers);
+  virtual void HandleFocus(BOOL gotFocus);
+  virtual void HandleNullEvent(void);
+  virtual void HandleVisChange(void);
 
-   virtual void HandleFind (void);
-   virtual void HandleFindAgain (void);
-   virtual void HandleReplace (void);
-   virtual void HandleReplaceFind (void);
-   virtual void HandleReplaceAll (void);
+  virtual void HandleUndo(void);
+  virtual void HandleRedo(void);
+  virtual void HandleCut(void);
+  virtual void HandleCopy(void);
+  virtual void HandlePaste(void);
+  virtual void HandleClear(void);
+  virtual void HandleClearAll(void);
 
-   virtual void Track(Point pt, INT part);
+  virtual void HandleFind(void);
+  virtual void HandleFindAgain(void);
+  virtual void HandleReplace(void);
+  virtual void HandleReplaceFind(void);
+  virtual void HandleReplaceAll(void);
 
-   void SetText (CHAR *s, INT count = -1);
-   void InsText (CHAR *s, INT count = -1);
-   INT  GetText (CHAR *s);
-   INT  CharCount (void);
+  virtual void Track(Point pt, INT part);
 
-   BOOL CanUndo (void);
-   BOOL CanRedo (void);
+  void SetText(CHAR *s, INT count = -1);
+  void InsText(CHAR *s, INT count = -1);
+  INT GetText(CHAR *s);
+  INT CharCount(void);
 
-   BOOL CanFindAgain (void);
-   BOOL CanReplace (void);
+  BOOL CanUndo(void);
+  BOOL CanRedo(void);
 
-   BOOL TextSelected (void);
-   BOOL Dirty (void);
-   void ClearDirty (void);
+  BOOL CanFindAgain(void);
+  BOOL CanReplace(void);
 
-// pseudo-private:
+  BOOL TextSelected(void);
+  BOOL Dirty(void);
+  void ClearDirty(void);
 
-   void DrawText (INT firstLine = -1, INT lastLine = -1, BOOL eraseRest = false);
+  // pseudo-private:
 
-   INT  txLines;                     // Number of lines.
-   INT  visTxLines;                  // Maximum number of visible annotation text lines.
+  void DrawText(INT firstLine = -1, INT lastLine = -1, BOOL eraseRest = false);
 
-private:
-   //--- Editor data ---
-   INT  textLineHeight;              // = FontHeight(). Stored as variable for optimization reasons.
-   CHAR *Text;                       // Annotation text buffer for current game move.
-   LONG txSize, maxTxSize;           // Number of characters in this buffer.
-   INT  LineStart[maxTxLines + 1];   // Indices in Text[] of first char in each line.
+  INT txLines;     // Number of lines.
+  INT visTxLines;  // Maximum number of visible annotation text lines.
 
-   LONG selStart;                    // If a character sequence has been selected, selStart and
-   LONG selEnd;                      // selEnd indicates the first and last character. Are both
-   LONG caret;                       // Index in Text[] buffer where next char will be typed.
-   LONG lastCaret;
-   BOOL showCaret;
+ private:
+  //--- Editor data ---
+  INT textLineHeight;  // = FontHeight(). Stored as variable for optimization
+                       // reasons.
+  CHAR *Text;          // Annotation text buffer for current game move.
+  LONG txSize, maxTxSize;  // Number of characters in this buffer.
+  INT LineStart[maxTxLines +
+                1];  // Indices in Text[] of first char in each line.
 
-   BOOL dirty;
-   BOOL readOnly;
-   BOOL password;
+  LONG selStart;  // If a character sequence has been selected, selStart and
+  LONG selEnd;    // selEnd indicates the first and last character. Are both
+  LONG caret;     // Index in Text[] buffer where next char will be typed.
+  LONG lastCaret;
+  BOOL showCaret;
 
-   ControlHandle scrollBar;
+  BOOL dirty;
+  BOOL readOnly;
+  BOOL password;
 
-   CRect editRect;                   // Rectangle enclosing the actual edit field.
+  ControlHandle scrollBar;
 
-   //--- Process Keyboard Input ---
-   void DoTypeChar (CHAR c);
-   void DoBackDel (void);
-   void DoForwardDel (void);
-   void DoPrevChar (BOOL lineChange, INT modifiers);
-   void DoNextChar (BOOL lineChange, INT modifiers);
-   void DeleteSelection (void);
+  CRect editRect;  // Rectangle enclosing the actual edit field.
 
-   //--- Process Mouse Input ---
-   void UpdateSelection (INT from, INT to, INT selStart0, INT selEnd0);
-   INT  PointToPos (CPoint pt);
+  //--- Process Keyboard Input ---
+  void DoTypeChar(CHAR c);
+  void DoBackDel(void);
+  void DoForwardDel(void);
+  void DoPrevChar(BOOL lineChange, INT modifiers);
+  void DoNextChar(BOOL lineChange, INT modifiers);
+  void DeleteSelection(void);
 
-   //--- Editing ---
-   void InsertText (INT pos, INT count, CHAR s[]);
-   void RemoveText (INT pos, INT count);
+  //--- Process Mouse Input ---
+  void UpdateSelection(INT from, INT to, INT selStart0, INT selEnd0);
+  INT PointToPos(CPoint pt);
 
-   //--- Drawing ---
-   void CalcEditorDim (void);
-   void DrawTextLine (INT line);
-   void MoveToLine (INT line);
-   void SetColorMode (BOOL hilited);
-   INT  CalcLine (INT i);
-   INT  TextExtent (INT i0, INT i1);
+  //--- Editing ---
+  void InsertText(INT pos, INT count, CHAR s[]);
+  void RemoveText(INT pos, INT count);
 
-   //--- Insertion mark/selection ---
-   void ShowCaret (BOOL showIt);
-   void DrawCaret (INT i);
-   void DoSelectAll (void);
-   void Deselect (void);
+  //--- Drawing ---
+  void CalcEditorDim(void);
+  void DrawTextLine(INT line);
+  void MoveToLine(INT line);
+  void SetColorMode(BOOL hilited);
+  INT CalcLine(INT i);
+  INT TextExtent(INT i0, INT i1);
 
-   //--- History (Undo/Redo) handling ---
-   void ResetHistory (void);
-   void HisAddEvent (INT type, INT pos, INT count, CHAR *s);
-   void HisAddWord (INT word);
-   void HisUndoRedo (BOOL undoing);
-   void HisInsertText (INT pos, INT count, INT wrapCount, CHAR *s);
-   INT  HisEventSize (INT count);
-   void UpdateHistoryEnable (void);
+  //--- Insertion mark/selection ---
+  void ShowCaret(BOOL showIt);
+  void DrawCaret(INT i);
+  void DoSelectAll(void);
+  void Deselect(void);
 
-   INT  *EditHis;
-   INT  hisStart, hisEnd, hisMaxEnd;
-   BOOL addToHis;
+  //--- History (Undo/Redo) handling ---
+  void ResetHistory(void);
+  void HisAddEvent(INT type, INT pos, INT count, CHAR *s);
+  void HisAddWord(INT word);
+  void HisUndoRedo(BOOL undoing);
+  void HisInsertText(INT pos, INT count, INT wrapCount, CHAR *s);
+  INT HisEventSize(INT count);
+  void UpdateHistoryEnable(void);
 
-   //--- Scrap handling ---
-   void UpdateScrapEnable (void);
+  INT *EditHis;
+  INT hisStart, hisEnd, hisMaxEnd;
+  BOOL addToHis;
 
-   //--- Search Replace ---
+  //--- Scrap handling ---
+  void UpdateScrapEnable(void);
 
-   BOOL FindAgain (void);
-   BOOL Replace (void);
+  //--- Search Replace ---
 
-   CHAR searchStr[srcStrLen + 1];
-   CHAR replaceStr[srcStrLen + 1];
-   BOOL caseSensitive;
+  BOOL FindAgain(void);
+  BOOL Replace(void);
 
-   //--- Scrolling ---
-   void AdjustScrollBar (void);
-   void ScrollToCaret (void);
-   void ScrollUp (void);
-   void ScrollDown (void);
+  CHAR searchStr[srcStrLen + 1];
+  CHAR replaceStr[srcStrLen + 1];
+  BOOL caseSensitive;
 
-   //--- Text line wrapping ---
-   void WrapTextLines (void);
+  //--- Scrolling ---
+  void AdjustScrollBar(void);
+  void ScrollToCaret(void);
+  void ScrollUp(void);
+  void ScrollDown(void);
 
+  //--- Text line wrapping ---
+  void WrapTextLines(void);
 };
 
-
 /**************************************************************************************************/
 /*                                                                                                */
-/*                                         GLOBAL DATA STRUCTURES                                 */
-/*                                                                                                */
-/**************************************************************************************************/
-
-
-/**************************************************************************************************/
-/*                                                                                                */
-/*                                          FUNCTION PROTOTYPES                                   */
+/*                                         GLOBAL DATA STRUCTURES */
 /*                                                                                                */
 /**************************************************************************************************/
 
-INT WrapTextLines (CHAR *Text, INT charCount, INT CharWidth[], INT maxLineWidth, INT LineStart[]);
+/**************************************************************************************************/
+/*                                                                                                */
+/*                                          FUNCTION PROTOTYPES */
+/*                                                                                                */
+/**************************************************************************************************/
+
+INT WrapTextLines(CHAR *Text, INT charCount, INT CharWidth[], INT maxLineWidth,
+                  INT LineStart[]);

@@ -215,12 +215,12 @@ Engine to GUI:
 	and display an error message instead!
 	The code in the engine can look like this
       TellGUI("copyprotection checking\n");
-	   // ... check the copy protection here ...
-	   if(ok)
-	      TellGUI("copyprotection ok\n");
-      else
-         TellGUI("copyprotection error\n");
-         
+// ... check the copy protection here ...
+if (ok)
+  TellGUI("copyprotection ok\n");
+else
+  TellGUI("copyprotection error\n");
+
 * registration
 	this is needed for engines that need a username and/or a code to function with all features.
 	Analog to the "copyprotection" command the engine can send "registration checking"
@@ -447,53 +447,47 @@ setoption name Hash value 32
 
 // init tbs
 setoption name NalimovCache value 1
-setoption name NalimovPath value d:\tb;c\tb
+setoption name NalimovPath value d:\tb;
+c\tb
 
-// waiting for the engine to finish initializing
-// this command and the answer is required here!
-isready
+    // waiting for the engine to finish initializing
+    // this command and the answer is required here!
+    isready
 
-// engine has finished setting up the internal values
-		readyok
+        // engine has finished setting up the internal values
+        readyok
 
-// now we are ready to go
+            // now we are ready to go
 
-// if the GUI is supporting it, tell the engine that is is
-// searching on a game that is hasn't searched on before
-ucinewgame
+            // if the GUI is supporting it, tell the engine that is is
+            // searching on a game that is hasn't searched on before
+            ucinewgame
 
-// if the engine supports the "UCI_AnalyseMode" option and the next search is supposted to
-// be an analysis, the GUI should set "UCI_AnalyseMode" to true if it is currently
-// set to false with this engine
-setoption name UCI_AnalyseMode value true
+                // if the engine supports the "UCI_AnalyseMode" option and the
+                // next search is supposted to be an analysis, the GUI should
+                // set "UCI_AnalyseMode" to true if it is currently set to false
+                // with this engine
+                    setoption name UCI_AnalyseMode value true
 
-// tell the engine to search infinite from the start position after 1.e4 e5
-position startpos moves e2e4 e7e5
-go infinite
+    // tell the engine to search infinite from the start position after 1.e4 e5
+    position startpos moves e2e4 e7e5 go infinite
 
-// the engine starts sending infos about the search to the GUI
-// (only some examples are given)
+        // the engine starts sending infos about the search to the GUI
+        // (only some examples are given)
 
+        info depth 1 seldepth 0 info score cp 13 depth 1 nodes 13 time 15 pv
+            f1b5 info depth 2 seldepth 2 info nps 15937 info score
+                cp 14 depth 2 nodes 255 time 15 pv f1c4 f8c5 info
+                    depth 2 seldepth 7 nodes 255 info depth 3 seldepth 7 info
+                        nps 26437 info score cp 20 depth 3 nodes 423 time 15 pv
+                            f1c4 g8f6 b1c3 info nps 41562 ....
 
-		info depth 1 seldepth 0
-		info score cp 13  depth 1 nodes 13 time 15 pv f1b5 
-		info depth 2 seldepth 2
-		info nps 15937
-		info score cp 14  depth 2 nodes 255 time 15 pv f1c4 f8c5 
-		info depth 2 seldepth 7 nodes 255
-		info depth 3 seldepth 7
-		info nps 26437
-		info score cp 20  depth 3 nodes 423 time 15 pv f1c4 g8f6 b1c3 
-		info nps 41562
-		....
+    // here the user has seen enough and asks to stop the searching
+    stop
 
-
-// here the user has seen enough and asks to stop the searching
-stop
-
-// the engine has finished searching and is sending the bestmove command
-// which is needed for every "go" command sent to tell the GUI
-// that the engine is ready again
-		bestmove g1f3 ponder d8f6
+        // the engine has finished searching and is sending the bestmove command
+        // which is needed for every "go" command sent to tell the GUI
+        // that the engine is ready again
+        bestmove g1f3 ponder d8f6
 
 #endif

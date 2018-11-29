@@ -1,7 +1,8 @@
 /**************************************************************************************************/
 /*                                                                                                */
-/* Module  : SELECTION.C                                                                          */
-/* Purpose : This module implements various selection routines used during the search.            */
+/* Module  : SELECTION.C */
+/* Purpose : This module implements various selection routines used during the
+ * search.            */
 /*                                                                                                */
 /**************************************************************************************************/
 
@@ -9,267 +10,282 @@
 Copyright (c) 2011, Ole K. Christensen
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted 
-provided that the following conditions are met:
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
 
-¥ Redistributions of source code must retain the above copyright notice, this list of conditions 
-  and the following disclaimer.
+¥ Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
 
-¥ Redistributions in binary form must reproduce the above copyright notice, this list of conditions 
-  and the following disclaimer in the documentation and/or other materials provided with the 
-  distribution.
+¥ Redistributions in binary form must reproduce the above copyright notice, this
+list of conditions and the following disclaimer in the documentation and/or
+other materials provided with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
-IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
-CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
-IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
-OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "Selection.f"
 
-
 /**************************************************************************************************/
 /*                                                                                                */
-/*                                 COMPUTING SELECTIVE BASE VALUE                                 */
+/*                                 COMPUTING SELECTIVE BASE VALUE */
 /*                                                                                                */
 /**************************************************************************************************/
 
-asm void ComputeSelBaseVal (void)
-{
-@ENDGAME
-   cmpi    cr5,0, rPlayer,white                 // if ("opponent has no officers and player has pawns")
-   bne     cr5, @B
-@W andis.  rTmp0, rPieceCount,0xFFF0            //    N->selMargin = maxVal; // Turn off selection
-   lbz     rTmp2, (ENGINE.B.PawnStructW + 6)(rEngine)
-   bne+    @PAWNS_7TH
-   andi.   rTmp0, rPieceCount,0x000F
-   beq-    @PAWNS_7TH
-@M li      rTmp1, maxVal
-   sth     rTmp1, node(selMargin)
-   blr
-@B andi.   rTmp0, rPieceCount,0xFFF0
-   lbz     rTmp2, (ENGINE.B.PawnStructB + 1)(rEngine)
-   bne+    @PAWNS_7TH
-   andis.  rTmp0, rPieceCount,0x000F
-   bne+    @M
+asm void ComputeSelBaseVal(void) {
+  @ENDGAME cmpi cr5, 0, rPlayer,
+      white  // if ("opponent has no officers and player has pawns")
+          bne cr5,
+      @B @W andis.rTmp0, rPieceCount,
+      0xFFF0  //    N->selMargin = maxVal; // Turn off selection
+      lbz rTmp2,
+      (ENGINE.B.PawnStructW + 6)(rEngine)bne + @PAWNS_7TH andi.rTmp0,
+      rPieceCount, 0x000F beq - @PAWNS_7TH @M li rTmp1, maxVal sth rTmp1,
+      node(selMargin) blr @B andi.rTmp0, rPieceCount, 0xFFF0 lbz rTmp2,
+      (ENGINE.B.PawnStructB + 1)(rEngine)bne + @PAWNS_7TH andis.rTmp0,
+      rPieceCount,
+      0x000F bne + @M
 
-@PAWNS_7TH                                      // else if ("player has pawns on 7th")
-   cmpi    cr6,0, rTmp2,0                       //    N->selMargin = maxVal;
-   bne-    cr6, @M
+          @PAWNS_7TH  // else if ("player has pawns on 7th")
+              cmpi cr6,
+      0, rTmp2,
+      0  //    N->selMargin = maxVal;
+          bne -
+          cr6,
+      @M
 
-@SEL                                            // else
-   lhz     rTmp1, node(ply)                     // {
-   lha     rTmp3, pnode(escapeSq)               //    N->selMargin = 4*(N->ply - 1);
-   lhz     rTmp4, pmove(from)
-   addi    rTmp1, rTmp1,-1
-   rlwinm  rTmp1, rTmp1,2,0,31
-   cmpi    cr5,0, rTmp3,0                       //    if (PN->escapeSq != nullSq &&
-   cmp     cr6,0, rTmp3,rTmp4
-   blt+    cr5, @Store                          //        PN->m.from != PN->escapeSq &&
-   beq-    cr6, @Store
-   rlwinm  rTmp5, rTmp3,2, 0,29                 //        Attack[PN->escapeSq] != 0)
-   lwzx    rTmp6, rAttack,rTmp5
-   cmpi    cr7,0, rTmp6,0
-   beq-    cr7, @Store
-   lha     rTmp7, pnode(threatEval)             //       selMargin += PN->threatEval;
-   add     rTmp1, rTmp1,rTmp7
-@Store
-   sth     rTmp1, node(selMargin)
-   blr                                          // }
+      @SEL  // else
+          lhz rTmp1,
+      node(ply)  // {
+      lha rTmp3,
+      pnode(escapeSq)  //    N->selMargin = 4*(N->ply - 1);
+      lhz rTmp4,
+      pmove(from) addi rTmp1, rTmp1, -1 rlwinm rTmp1, rTmp1, 2, 0, 31 cmpi cr5,
+      0, rTmp3,
+      0  //    if (PN->escapeSq != nullSq &&
+      cmp cr6,
+      0, rTmp3, rTmp4 blt + cr5,
+      @Store  //        PN->m.from != PN->escapeSq &&
+              beq -
+          cr6,
+      @Store rlwinm rTmp5, rTmp3, 2, 0,
+      29  //        Attack[PN->escapeSq] != 0)
+      lwzx rTmp6,
+      rAttack, rTmp5 cmpi cr7, 0, rTmp6, 0 beq - cr7, @Store lha rTmp7,
+      pnode(threatEval)  //       selMargin += PN->threatEval;
+      add rTmp1,
+      rTmp1, rTmp7 @Store sth rTmp1, node(selMargin) blr  // }
 } /* ComputeSelBaseVal */
 
-
 /**************************************************************************************************/
 /*                                                                                                */
-/*                                        FORWARD PRUNE MOVES                                     */
+/*                                        FORWARD PRUNE MOVES */
 /*                                                                                                */
 /**************************************************************************************************/
 
-static asm BOOL Turbulent (register INT mval);
+static asm BOOL Turbulent(register INT mval);
 
-asm BOOL SelectMove (void)
-{
-   #define diff  rTmp10
+asm BOOL SelectMove(void) {
+#define diff rTmp10
 
-   //--- Never prune special moves ---
+  //--- Never prune special moves ---
 
-   lhz     rTmp2, move(type)                    // if (N->m.type || N->gen == gen_J)
-   lhz     rTmp3, node(gen)
-   li      rTmp1, true                          //    return true;
-   cmpi    cr5,0, rTmp2,mtype_Normal
-   cmpi    cr6,0, rTmp3,gen_J
-   bnelr-  cr5
-   beqlr-  cr6
+  lhz rTmp2,
+      move(type)  // if (N->m.type || N->gen == gen_J)
+      lhz rTmp3,
+      node(gen) li rTmp1,
+      true  //    return true;
+      cmpi cr5,
+      0, rTmp2, mtype_Normal cmpi cr6, 0, rTmp3,
+      gen_J bnelr - cr5 beqlr -
+          cr6
 
-   //--- Calc evaluation difference ---
-   // diff = -NN->totalEval + N->selMargin - N->alpha. If this is positive, the move should
-   // immediately be searched. If it's negative we need to check if the move is turbulent
-   // enough to outweigh the poor positional/material score.
+              //--- Calc evaluation difference ---
+              // diff = -NN->totalEval + N->selMargin - N->alpha. If this is
+              // positive, the move should immediately be searched. If it's
+              // negative we need to check if the move is turbulent enough to
+              // outweigh the poor positional/material score.
 
-   lha     rTmp1, nnode(totalEval)              // diff = -NN->totalEval + N->selMargin - N->alpha;
-   lha     rTmp2, node(selMargin)
-   lha     rTmp3, node(alpha)
-   lhz     rTmp4, move(cap)  
-   lhz     rTmp5, move(piece)
-   subf    diff, rTmp1,rTmp2
-   subf    diff, rTmp3,diff
-   cmpi    cr5,0, rTmp4,empty                   // if (m.cap)
-   beq-    cr5, @CheckPawn                      //    diff += 40 - N->capSelVal;
-   lha     rTmp6, node(capSelVal)
-   addi    diff, diff,40
-   subf    diff, rTmp6,diff
-@CheckPawn
-   andi.   rTmp5, rTmp5,0x07                    // if (pieceType(m.piece) == pawn)
-   cmpi    cr6,0, rTmp5,pawn                    //    diff += 35;
-   bne+    cr6, @CheckDiff
-   addi    diff, diff,35
+                  lha rTmp1,
+      nnode(totalEval)  // diff = -NN->totalEval + N->selMargin - N->alpha;
+      lha rTmp2,
+      node(selMargin) lha rTmp3, node(alpha) lhz rTmp4, move(cap) lhz rTmp5,
+      move(piece) subf diff, rTmp1, rTmp2 subf diff, rTmp3, diff cmpi cr5, 0,
+      rTmp4,
+      empty  // if (m.cap)
+              beq -
+          cr5,
+      @CheckPawn  //    diff += 40 - N->capSelVal;
+          lha rTmp6,
+      node(capSelVal) addi diff, diff, 40 subf diff, rTmp6,
+      diff @CheckPawn andi.rTmp5, rTmp5,
+      0x07  // if (pieceType(m.piece) == pawn)
+      cmpi cr6,
+      0, rTmp5,
+      pawn  //    diff += 35;
+              bne +
+          cr6,
+      @CheckDiff addi diff, diff,
+      35
 
-@CheckDiff
-   cmpi    cr7,0, diff,0                        // if (diff > 0) return true;
-   li      rTmp1, true
-   bgtlr+  cr7
-   neg     rTmp1, diff                          // return Turbulent(-diff);
-   b       Turbulent
+      @CheckDiff cmpi cr7,
+      0, diff,
+      0  // if (diff > 0) return true;
+      li rTmp1,
+      true bgtlr + cr7 neg rTmp1,
+      diff  // return Turbulent(-diff);
+          b Turbulent
 
-   #undef diff
+#undef diff
 } /* SelectMove */
 
-
 /**************************************************************************************************/
 /*                                                                                                */
-/*                                         TURBULENCE CHECKING                                    */
+/*                                         TURBULENCE CHECKING */
 /*                                                                                                */
 /**************************************************************************************************/
 
-#define tp   rTmp10  // <--- global in subsequent routines
+#define tp rTmp10  // <--- global in subsequent routines
 
-static asm BOOL DirectThreat (void);
-//static asm BOOL DirectThreatS (void);
-static asm BOOL IndirectThreat (register ATTACK qrbAtt);
+static asm BOOL DirectThreat(void);
+// static asm BOOL DirectThreatS (void);
+static asm BOOL IndirectThreat(register ATTACK qrbAtt);
 
-// The main turbulence check routine "Turbulent(mval)" checks if the current move poses a threat
-// that is a least worth "mval" points. This is done by converting mval to a piece, i.e. the
-// piece that must at least be threatened in order for the move to be considered turbulent enough.
+// The main turbulence check routine "Turbulent(mval)" checks if the current
+// move poses a threat that is a least worth "mval" points. This is done by
+// converting mval to a piece, i.e. the piece that must at least be threatened
+// in order for the move to be considered turbulent enough.
 
-static asm BOOL Turbulent (register INT mval)
-{
-// #define ngen rTmp3
+static asm BOOL Turbulent(register INT mval) {
+  // #define ngen rTmp3
 
-   frame_begin0
+  frame_begin0
 
-   cmpi    cr5,0, mval,350                     // if (mval < 350)
-// lhz     ngen, node(gen)
-   bgt     cr5, @KQR
-   cmpi    cr6,0, mval,150                     //    if (mval < 150)
-   li      tp, pawn + black                    //       tp = enemy(pawn);
-   blt     cr6, @Ole                           //    else
-   li      tp, knight + black                  //       tp = enemy(knight);
-   b       @Ole
-@KQR
-   cmpi    cr7,0, mval,550                     // else if (mval < 550)
-   li      tp, rook + black                    //    tp = enemy(rook);
-   blt     cr7, @Ole
-   cmpi    cr6,0, mval,950                     // else if (mval < 950)
-   li      tp, queen + black                   //    tp = enemy(queen);
-   blt     cr6, @Ole                           // else
-   li      tp, king + black                    //    tp = enemy(king);
-@Ole
-   subf    tp, rPlayer,tp                      // if (DirectThreat(tp)) return true;
-   bl      DirectThreat
-   cmpi    cr6,0, rTmp1,0
-   bne     cr6, @RETURN
-/*
-   cmpi    cr5,0, ngen,gen_I                   // if (N->gen != gen_I)
-   subf    tp, rPlayer,tp                      // {
-   beq     cr5, @Sacri                         //    if (DirectThreat(tp)) return true;
-   bl      DirectThreat
-   cmpi    cr6,0, rTmp1,0
-   bne     cr6, @RETURN                        // }
-   b       @Indirect                           // else
-@Sacri                                         // {
-   bl      DirectThreatS                       //    if (DirectThreatS(tp)) return true;
-   cmpi    cr6,0, rTmp1,0
-   bne     cr6, @RETURN                        // }
-*/
-@Indirect
-   lhz     rTmp2, move(from)                   // a = Attack[m->from] & qrbMask;
-   frame_end0
-   rlwinm  rTmp2, rTmp2,2,0,29
-   lwzx    rTmp1, rAttack,rTmp2                // return (a && IndirectThreat(tp, a));
-   andi.   rTmp1, rTmp1,0xFFFF
-   beqlr
-   b       IndirectThreat
+      cmpi cr5,
+      0, mval,
+      350  // if (mval < 350)
+           // lhz     ngen, node(gen)
+      bgt cr5,
+      @KQR cmpi cr6, 0, mval,
+      150  //    if (mval < 150)
+      li tp,
+      pawn + black  //       tp = enemy(pawn);
+                 blt cr6,
+      @Ole  //    else
+          li tp,
+      knight + black  //       tp = enemy(knight);
+                   b @Ole @KQR cmpi cr7,
+      0, mval,
+      550  // else if (mval < 550)
+      li tp,
+      rook + black  //    tp = enemy(rook);
+                 blt cr7,
+      @Ole cmpi cr6, 0, mval,
+      950  // else if (mval < 950)
+      li tp,
+      queen + black  //    tp = enemy(queen);
+                  blt cr6,
+      @Ole  // else
+          li tp,
+      king + black  //    tp = enemy(king);
+          @Ole subf tp,
+      rPlayer,
+      tp  // if (DirectThreat(tp)) return true;
+          bl DirectThreat cmpi cr6,
+      0, rTmp1, 0 bne cr6,
+      @RETURN
+      /*
+         cmpi    cr5,0, ngen,gen_I                   // if (N->gen != gen_I)
+         subf    tp, rPlayer,tp                      // {
+         beq     cr5, @Sacri                         //    if (DirectThreat(tp))
+      return true; bl      DirectThreat cmpi    cr6,0, rTmp1,0 bne     cr6,
+      @RETURN                        // } b       @Indirect // else
+      @Sacri                                         // {
+         bl      DirectThreatS                       //    if
+      (DirectThreatS(tp)) return true; cmpi    cr6,0, rTmp1,0 bne     cr6,
+      @RETURN                        // }
+      */
+      @Indirect lhz rTmp2,
+      move(from)  // a = Attack[m->from] & qrbMask;
+      frame_end0 rlwinm rTmp2,
+      rTmp2, 2, 0, 29 lwzx rTmp1, rAttack,
+      rTmp2  // return (a && IndirectThreat(tp, a));
+          andi.rTmp1,
+      rTmp1,
+      0xFFFF beqlr b IndirectThreat
 
-@RETURN
-   frame_end0
-   blr
+      @RETURN frame_end0 blr
 
-// #undef ngen
+  // #undef ngen
 } /* Turbulent */
 
-/*----------------------------------------- Direct Threats ---------------------------------------*/
+/*----------------------------------------- Direct Threats
+ * ---------------------------------------*/
 // On entry: rTmp10 = tp holds the minimum piece that must be threatened
 
-static asm BOOL DirectThreat (void)
-{
-	#define dtN(dir, nxt) \
-	   lhz     p, (2*dir)(Bto)                     ; /* p = B[dir];                            */ \
-	   cmp     cr5,0, p,tp                         ; /* if (p >= tp &&                         */ \
-	   blt     cr5, nxt                            ; /*                                        */ \
-	   cmp     cr6,0, p,rTmp1                      ; /*     p <= enemy(king) &&                */ \
-	   bgt     cr6, nxt                            ; /*                                        */ \
-	   lwz     rTmp0, (4*dir)(Ato)                 ; /*     (p >= enemy(rook) || ! A[dir]))    */ \
-	   cmp     cr7,0, p,rTmp2                      ; /*                                        */ \
-	   bgelr   cr7                                 ; /*    return true;                        */ \
-	   cmpi    cr5,0, rTmp0,0                      ; /*                                        */ \
-	   beqlr   cr5                                 ; /*                                        */ \
-	nxt
+static asm BOOL DirectThreat(void) {
+#define dtN(dir, nxt)                                                     \
+  lhz p, (2 * dir)(Bto);     /* p = B[dir];                            */ \
+  cmp cr5, 0, p, tp;         /* if (p >= tp &&                         */ \
+  blt cr5, nxt;              /*                                        */ \
+  cmp cr6, 0, p, rTmp1;      /*     p <= enemy(king) &&                */ \
+  bgt cr6, nxt;              /*                                        */ \
+  lwz rTmp0, (4 * dir)(Ato); /*     (p >= enemy(rook) || ! A[dir]))    */ \
+  cmp cr7, 0, p, rTmp2;      /*                                        */ \
+  bgelr cr7;                 /*    return true;                        */ \
+  cmpi cr5, 0, rTmp0, 0;     /*                                        */ \
+  beqlr cr5;                 /*                                        */ \
+  nxt
 
-	#define dtK(dir, nxt) \
-	   lhz     p, (2*dir)(Bto)                     ; /* p = B[dir];                            */ \
-	   cmp     cr5,0, p,tp                         ; /* if (p >= tp &&                         */ \
-	   blt     cr5, nxt                            ; /*                                        */ \
-	   cmp     cr6,0, p,rTmp1                      ; /*     p <= enemy(rook) &&                */ \
-	   lwz     rTmp0, (4*dir)(Ato)                 ; /*     ! A[dir])                          */ \
-	   bgt     cr6, nxt                            ; /*                                        */ \
-	   cmpi    cr5,0, rTmp0,0                      ; /*    return true;                        */ \
-	   beqlr   cr5                                 ; /*                                        */ \
-	nxt
+#define dtK(dir, nxt)                                                     \
+  lhz p, (2 * dir)(Bto);     /* p = B[dir];                            */ \
+  cmp cr5, 0, p, tp;         /* if (p >= tp &&                         */ \
+  blt cr5, nxt;              /*                                        */ \
+  cmp cr6, 0, p, rTmp1;      /*     p <= enemy(rook) &&                */ \
+  lwz rTmp0, (4 * dir)(Ato); /*     ! A[dir])                          */ \
+  bgt cr6, nxt;              /*                                        */ \
+  cmpi cr5, 0, rTmp0, 0;     /*    return true;                        */ \
+  beqlr cr5;                 /*                                        */ \
+  nxt
 
-	#define dtQRB(sc, nxt) \
-	   mr      Bsq, Bto                            ; /* sq = m.to;                             */ \
-	sc lhzux   p, Bsq,tdir                         ; /* while (isEmpty(sq += tdir));           */ \
-	   cmpi    cr5,0, p,empty                      ; /*                                        */ \
-	   beq+    cr5, sc                             ; /* p = B[sq];                             */ \
-	   cmp     cr5,0, p,tp                         ; /* if (p >= tp &&                         */ \
-	   blt     cr5, nxt                            ; /*                                        */ \
-	   cmp     cr6,0, p,rTmp1                      ; /*     p <= enemy(king) &&                */ \
-	   bgt     cr6, nxt                            ; /*                                        */ \
-	   cmp     cr7,0, p,rTmp2                      ; /*     (p >= enemy(P) || ! A[dir]))       */ \
-	   bgelr   cr7                                 ; /*                                        */ \
-	   subf    rTmp0, Bto,Bsq                      ; /*                                        */ \
-	   add     rTmp0, rTmp0,rTmp0                  ; /*                                        */ \
-	   lwzx    rTmp0, Ato,rTmp0                    ; /*                                        */ \
-	   cmpi    cr5,0, rTmp0,0                      ; /*                                        */ \
-	   beqlr   cr5                                 ; /*    return true;                        */ \
-	nxt
+#define dtQRB(sc, nxt)                                                  \
+  mr Bsq, Bto;             /* sq = m.to;                             */ \
+  sc lhzux p, Bsq, tdir;   /* while (isEmpty(sq += tdir));           */ \
+  cmpi cr5, 0, p, empty;   /*                                        */ \
+  beq + cr5, sc;           /* p = B[sq];                             */ \
+  cmp cr5, 0, p, tp;       /* if (p >= tp &&                         */ \
+  blt cr5, nxt;            /*                                        */ \
+  cmp cr6, 0, p, rTmp1;    /*     p <= enemy(king) &&                */ \
+  bgt cr6, nxt;            /*                                        */ \
+  cmp cr7, 0, p, rTmp2;    /*     (p >= enemy(P) || ! A[dir]))       */ \
+  bgelr cr7;               /*                                        */ \
+  subf rTmp0, Bto, Bsq;    /*                                        */ \
+  add rTmp0, rTmp0, rTmp0; /*                                        */ \
+  lwzx rTmp0, Ato, rTmp0;  /*                                        */ \
+  cmpi cr5, 0, rTmp0, 0;   /*                                        */ \
+  beqlr cr5;               /*    return true;                        */ \
+  nxt
 
-   #define mpiece  rTmp9
-   #define p       rTmp9
-   #define p1      rTmp9
-   #define p2      rTmp6
-   #define Ato     rTmp8
-   #define Bto     rTmp7
-   #define Bsq     rTmp4
-   #define tdir    rTmp6
-   #define QDir    rTmp3
-   #define mto     rTmp5
-   #define ksq     rTmp4
-   #define mdir    rTmp4
+#define mpiece rTmp9
+#define p rTmp9
+#define p1 rTmp9
+#define p2 rTmp6
+#define Ato rTmp8
+#define Bto rTmp7
+#define Bsq rTmp4
+#define tdir rTmp6
+#define QDir rTmp3
+#define mto rTmp5
+#define ksq rTmp4
+#define mdir rTmp4
 
    lhz     mto, move(to)                       // if (Closeness[m->to - kingSq_] >= 7)
    lhz     ksq, 0(rPieceLoc_)
@@ -459,117 +475,144 @@ static asm BOOL DirectThreat (void)
    li      rTmp1, false                        // return false;
    blr
 
-   #undef mpiece
-   #undef p
-   #undef p1
-   #undef p2
-   #undef Ato
-   #undef Bto
-   #undef Bsq
-   #undef tdir
-   #undef QDir
-   #undef mto
-   #undef ksq
-   #undef mdir
+#undef mpiece
+#undef p
+#undef p1
+#undef p2
+#undef Ato
+#undef Bto
+#undef Bsq
+#undef tdir
+#undef QDir
+#undef mto
+#undef ksq
+#undef mdir
 
-   #undef dtN
-   #undef dtK
-   #undef dtQRB
+#undef dtN
+#undef dtK
+#undef dtQRB
 } /* DirectThreat */
 
-/*------------------------------------ Direct Sacrifice Threats ----------------------------------*/
+/*------------------------------------ Direct Sacrifice Threats
+ * ----------------------------------*/
 
 #ifdef kartoffel
 
-static asm BOOL DirectThreatS (void)
-{
-   b DirectThreat  //### !!!!!! 
+static asm BOOL DirectThreatS(void) {
+  b DirectThreat  //### !!!!!!
 
-   li      rTmp1, false
-   blr
+      li rTmp1,
+      false blr
 } /* DirectThreatS */
 
 #endif
 
-/*--------------------------------------- Indirect Threats ---------------------------------------*/
+/*--------------------------------------- Indirect Threats
+ * ---------------------------------------*/
 // Checks if "N->m" poses an indirect threat. On entry:
 //    rTmp1(qrbAtt) = Attack[m->from] & qrbMask
 //    rTmp10(tp)    = Minimum target piece
 
-static asm BOOL IndirectThreat (register ATTACK qrbAtt)
-{
-   #define qrb    rTmp9
-   #define abits  rTmp7
-   #define Data   rTmp8
-   #define adir   rTmp4
-   #define mdir   rTmp6
-   #define mfrom  rTmp5
-   #define ip     rTmp7
-   #define rbit   rTmp4
+static asm BOOL IndirectThreat(register ATTACK qrbAtt) {
+#define qrb rTmp9
+#define abits rTmp7
+#define Data rTmp8
+#define adir rTmp4
+#define mdir rTmp6
+#define mfrom rTmp5
+#define ip rTmp7
+#define rbit rTmp4
 
-   srawi   rTmp2, qrbAtt,8                     // abits = (qrbAtt | (qrbAtt>>8)) & 0x00FF;
-   lhz     mfrom, move(from)
-   or      rTmp2, qrbAtt,rTmp2
-   lha     mdir, move(dir)
-   rlwinm. abits, rTmp2,4, 20,27
-   addi    Data, rGlobal,GLOBAL.M.QRBdata
-   add     mfrom, mfrom,mfrom
-   mr      qrb, qrbAtt
+  srawi rTmp2, qrbAtt,
+      8  // abits = (qrbAtt | (qrbAtt>>8)) & 0x00FF;
+      lhz mfrom,
+      move(from) or rTmp2, qrbAtt, rTmp2 lha mdir, move(dir) rlwinm.abits,
+      rTmp2, 4, 20, 27 addi Data, rGlobal, GLOBAL.M.QRBdata add mfrom, mfrom,
+      mfrom mr qrb,
+      qrbAtt
 
-@FOR                                           // for (bits = abits; bits; clrBit(j,bits))
-   lhaux   adir, Data,abits                    // {
-   add     rTmp2, rBoard,mfrom
-   cmp     cr7,0, adir,mdir                    //    adir = QueenDir[j = LowBit[bits]];
-   add.    rTmp0, adir,mdir
-   beq-    cr7, @ROF                           //    if (adir == m->dir || adir == -m->dir)
-   beq-    @ROF                                //       continue;
-   add     rTmp1, adir,adir                    //    sq = m.from;
-@L lhzux   ip, rTmp2,rTmp1                     //    while (Board[sq + dir] == empty) sq += dir;
-   cmpi    cr5,0, ip,empty
-   beq+    cr5, @L                             //    ip = Board[sq];
+      @FOR  // for (bits = abits; bits; clrBit(j,bits))
+          lhaux adir,
+      Data,
+      abits  // {
+          add rTmp2,
+      rBoard, mfrom cmp cr7, 0, adir,
+      mdir  //    adir = QueenDir[j = LowBit[bits]];
+          add.rTmp0,
+      adir, mdir beq - cr7,
+      @ROF  //    if (adir == m->dir || adir == -m->dir)
+              beq -
+          @ROF  //       continue;
+              add rTmp1,
+      adir,
+      adir  //    sq = m.from;
+      @L lhzux ip,
+      rTmp2,
+      rTmp1  //    while (Board[sq + dir] == empty) sq += dir;
+          cmpi cr5,
+      0, ip, empty beq + cr5,
+      @L  //    ip = Board[sq];
 
-   cmp     cr6,0, ip,tp                        //    if (ip < tp) continue;
-   add     rTmp1, ip,rPlayer   
-   blt     cr6, @ROF                           //    if (ip > enemy(king)) continue;
-   cmpi    cr7,0, rTmp1,king + black
-   bgt     cr7, @ROF                           //    if (ip == enemy(king)) return true;
-   beqlr-  cr7
+          cmp cr6,
+      0, ip,
+      tp  //    if (ip < tp) continue;
+          add rTmp1,
+      ip, rPlayer blt cr6,
+      @ROF  //    if (ip > enemy(king)) continue;
+          cmpi cr7,
+      0, rTmp1, king + black bgt cr7,
+      @ROF  //    if (ip == enemy(king)) return true;
+              beqlr -
+          cr7
 
-   subf    rTmp2, rBoard,rTmp2                 //    if (! Attack_[sq]) return true;
-   add     rTmp2, rTmp2,rTmp2
-   lwzx    rTmp0, rAttack_,rTmp2
-   andi.   ip, ip,0x07                         //    switch (pieceType(Board[sq]))
-   cmpi    cr6,0, ip,rook                      //    {
-   cmpi    cr5,0, rTmp0,0
-   beqlr   cr5
+              subf rTmp2,
+      rBoard,
+      rTmp2  //    if (! Attack_[sq]) return true;
+          add rTmp2,
+      rTmp2, rTmp2 lwzx rTmp0, rAttack_, rTmp2 andi.ip, ip,
+      0x07  //    switch (pieceType(Board[sq]))
+      cmpi cr6,
+      0, ip,
+      rook  //    {
+          cmpi cr5,
+      0, rTmp0,
+      0 beqlr cr5
 
-   blt+    cr6, @ROF
-   lwz     rbit, QRB_DATA.rayBit(Data)
-   beq+    cr6, @R
-@Q andi.   rTmp1, qrb,0xFF00                   //       case queen:
-   and.    rTmp1, rTmp1,rbit                   //          if (a & RayBit[j] & rbMask) return true;
-   bnelr
-   b       @ROF                                //          break;
-@R andi.   rTmp1, qrb,0x0F00                   //       case rook:
-   and.    rTmp1, rTmp1,rbit                   //          if (a & RayBit[j] & bMask) return true;
-   bnelr                                       //    }
+              blt +
+          cr6,
+      @ROF lwz rbit, QRB_DATA.rayBit(Data) beq + cr6, @R @Q andi.rTmp1, qrb,
+      0xFF00  //       case queen:
+          and.rTmp1,
+      rTmp1,
+      rbit              //          if (a & RayBit[j] & rbMask) return true;
+          bnelr b @ROF  //          break;
+      @R andi.rTmp1,
+      qrb,
+      0x0F00  //       case rook:
+          and.rTmp1,
+      rTmp1,
+      rbit       //          if (a & RayBit[j] & bMask) return true;
+          bnelr  //    }
 
-@ROF
-   lha     abits, QRB_DATA.offset(Data)
-   cmpi    cr5,0, abits,0                      //    clrBit(j,bits);
-   bne-    cr5,@FOR                            // }
+      @ROF lha abits,
+      QRB_DATA.offset(Data) cmpi cr5, 0, abits,
+      0  //    clrBit(j,bits);
+          bne -
+          cr5,
+      @FOR  // }
 
-   li      rTmp1, false                        // return false;
-   blr
+          li rTmp1,
+      false  // return false;
+      blr
 
-   #undef qrb
-   #undef abits
-   #undef Data
-   #undef adir
-   #undef mdir
-   #undef mfrom
-   #undef ip
-   #undef rbit
+#undef qrb
+#undef abits
+#undef Data
+#undef adir
+#undef mdir
+#undef mfrom
+#undef ip
+#undef rbit
 } /* IndirectThreat */
 
 /*------------------------------------------------------------------------------------------------*/
